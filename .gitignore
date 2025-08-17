@@ -1,0 +1,16 @@
+# GENERAL
+_dist/
+.vs/
+
+# ResonanceTools.HotfixParser
+ResonanceTools.HotfixParser/bin/
+ResonanceTools.HotfixParser/obj/
+ResonanceTools.HotfixParser/Properties/
+
+# ResonanceTools.JABParser
+ResonanceTools.JABParser/bin/
+ResonanceTools.JABParser/obj/
+
+# ResonanceTools.Utility
+ResonanceTools.Utility/bin/
+ResonanceTools.Utility/obj/
