@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using ResonanceTools.Utility;
 
 namespace ResonanceTools.JABParser;
 
@@ -84,17 +85,17 @@ public class Program
                 var jabFiles = Directory.GetFiles(inputPath, "*.jab", SearchOption.AllDirectories);
                 if (jabFiles.Length == 0)
                 {
-                    Console.Error.WriteLine("No .jab files found in the directory.");
+                    Log.Error("No .jab files found in the directory.");
                     return 6;
                 }
                 bool doExtract = !string.IsNullOrEmpty(outDir);
                 foreach (var jabFile in jabFiles)
                 {
-                    Console.WriteLine($"Processing: {jabFile}");
+                    Log.Info($"Processing: {jabFile}");
                     var info = UtilsJab.Inspect(jabFile, Encoding.UTF8);
                     if (info == null)
                     {
-                        Console.Error.WriteLine($"Parsing failed for {jabFile}");
+                        Log.Error($"Parsing failed for {jabFile}");
                         continue;
                     }
                     // Save metadata only when NOT extracting; if extracting and no explicit --json for dir mode, skip metas.
@@ -103,7 +104,7 @@ public class Program
                         string metaPath = Path.ChangeExtension(jabFile, ".jabmeta.json");
                         var json = System.Text.Json.JsonSerializer.Serialize(info, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                         File.WriteAllText(metaPath, json, Encoding.UTF8);
-                        Console.WriteLine("Metadata saved in: " + metaPath);
+                        Log.Info("Metadata saved in: " + metaPath);
                     }
 
                     if (doExtract)
@@ -113,10 +114,10 @@ public class Program
                         string decodeRoot = NormalizeDecodeDir(outDir!, info.Prefix);
                         if (!UtilsJab.Decode(jabFile, decodeRoot, Encoding.UTF8, bufferSize))
                         {
-                            Console.Error.WriteLine($"Extraction failed for {jabFile}");
+                            Log.Error($"Extraction failed for {jabFile}");
                             continue;
                         }
-                        Console.WriteLine("Extraction completed in: " + outDir);
+                        Log.Info("Extraction completed in: " + outDir);
                     }
                 }
                 return 0;
@@ -126,7 +127,7 @@ public class Program
                 var info = UtilsJab.Inspect(inputPath, Encoding.UTF8);
                 if (info == null)
                 {
-                    Console.Error.WriteLine("Parsing failed");
+                    Log.Error("Parsing failed");
                     return 3;
                 }
                 bool doExtract = !string.IsNullOrEmpty(outDir);
@@ -137,7 +138,7 @@ public class Program
                     jsonOut ??= Path.ChangeExtension(inputPath, ".jabmeta.json");
                     var json = System.Text.Json.JsonSerializer.Serialize(info, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
                     File.WriteAllText(jsonOut, json, Encoding.UTF8);
-                    Console.WriteLine("Metadata saved to: " + jsonOut);
+                    Log.Info("Metadata saved to: " + jsonOut);
                 }
 
                 // Optional extraction
@@ -146,10 +147,10 @@ public class Program
                     string decodeRoot = NormalizeDecodeDir(outDir!, info.Prefix);
                     if (!UtilsJab.Decode(inputPath, decodeRoot, Encoding.UTF8, bufferSize))
                     {
-                        Console.Error.WriteLine("Extraction failed");
+                        Log.Error("Extraction failed");
                         return 4;
                     }
-                    Console.WriteLine("Extraction completed in: " + outDir);
+                    Log.Info("Extraction completed in: " + outDir);
                 }
                 return 0;
             }
@@ -157,7 +158,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Log.Error("Error: " + ex.Message);
             return 5;
         }
     }

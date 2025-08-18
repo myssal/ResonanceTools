@@ -125,7 +125,7 @@ public class UtilsJab
                     try
                     {
                         attemptedDecompress = true;
-                        finalData = ZlibHelper.JabUncompressBytes(rawData);
+                        finalData = ZlibHelper.UncompressBytes(rawData, isJab: true);
                         if (child.UncSize != finalData.Length)
                         {
                             Log.Warn($"{child.Path} unc size expected {child.UncSize} obtained {finalData.Length}");

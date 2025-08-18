@@ -12,7 +12,7 @@ public static class ZlibHelper
     /// (For compressed JAB files, we use standard zlib inflate.)
     /// Does not modify the original array: works on a copy.
     /// </summary>
-    public static byte[] UncompressBytes(byte[] data)
+    public static byte[] UncompressBytes(byte[] data, bool isJab = false)
     {
         if (data == null || data.Length == 0)
             return Array.Empty<byte>();
@@ -22,32 +22,12 @@ public static class ZlibHelper
         Buffer.BlockCopy(data, 0, working, 0, data.Length);
 
         // Flipping the first byte (inverting bits); logic based on original code.
-        working[0] = (byte)(~working[0] & 0xFF);
+        if (!isJab)
+            working[0] = (byte)(~working[0] & 0xFF);
 
         try
         {
             Log.Debug($"ZlibHelper try zlib inflate...");
-            return InflateZlib(working);
-        }
-        catch (Exception ex)
-        {
-            Log.Debug($"ZlibHelper zlib inflate failed: {ex.Message}");
-            throw new InvalidOperationException();
-        }
-    }
-
-    public static byte[] JabUncompressBytes(byte[] data)
-    {
-        if (data == null || data.Length == 0)
-            return Array.Empty<byte>();
-
-        // Copying to avoid external side effects.
-        var working = new byte[data.Length];
-        Buffer.BlockCopy(data, 0, working, 0, data.Length);
-
-        try
-        {
-            Log.Debug("ZlibHelper try zlib inflate...");
             return InflateZlib(working);
         }
         catch (Exception ex)
