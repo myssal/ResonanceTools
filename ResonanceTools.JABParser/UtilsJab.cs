@@ -18,7 +18,7 @@ public class UtilsJab
     {
         if (!File.Exists(iJabFilePath))
         {
-            Log.Error("UtilsJab::Decode File not found: " + iJabFilePath);
+            Log.Error("File not found: " + iJabFilePath);
             return false;
         }
 
@@ -50,7 +50,7 @@ public class UtilsJab
         }
         catch (Exception ex)
         {
-            Log.Error("UtilsJab::Decode exception during file processing", ex);
+            Log.Error("Exception during file processing", ex);
             return false;
         }
     }
@@ -59,12 +59,12 @@ public class UtilsJab
     {
         if (iStream == null || !iStream.CanRead)
         {
-            Log.Error("UtilsJab::Decode stream null or not readable");
+            Log.Error("Stream null or not readable");
             return false;
         }
         if (string.IsNullOrEmpty(iDecodeDir))
         {
-            Log.Error("UtilsJab::Decode destination directory empty");
+            Log.Error("Destination directory empty");
             return false;
         }
         if (iEncoding == null) iEncoding = Encoding.UTF8;
@@ -78,7 +78,7 @@ public class UtilsJab
             var header = LoadHeader(reader, iEncoding);
             if (header == null || !header.Valid)
             {
-                Log.Error("UtilsJab::Decode header not valid");
+                Log.Error("JAB Header is null/not valid");
                 return false;
             }
 
@@ -89,19 +89,19 @@ public class UtilsJab
                 var child = LoadJabChildFile(reader, header, iJabName ?? string.Empty, iEncoding, ref lastRelPath);
                 if (child == null || !child.Valid)
                 {
-                    Log.Error($"UtilsJab::Decode child {i} not valid");
+                    Log.Error($"JAB child {i} is null/not valid");
                     return false;
                 }
                 header.AddChild(child);
             }
 
-            // Ora estraiamo i dati usando gli offset locali (DataLocalOffset relativo a dataSectionOffset presumibilmente)
+            // Extraction of data using local offsets (DataLocalOffset relative to dataSectionOffset presumably)
             foreach (var child in header.Children)
             {
                 long dataPos = (long)header.DataSectionGOffset + child.DataLocalOffset;
                 if (dataPos < 0 || dataPos > iStream.Length)
                 {
-                    Log.Error($"Offset out of range for {child.Path}");
+                    Log.Error($"JAB Offset out of range for {child.Path}");
                     return false;
                 }
                 iStream.Position = dataPos;
@@ -112,7 +112,7 @@ public class UtilsJab
                     int n = iStream.Read(rawData, total, rawData.Length - total);
                     if (n <= 0)
                     {
-                        Log.Error($"UtilsJab::Decode incomplete read for {child.Path} ({total}/{rawData.Length})");
+                        Log.Error($"Incomplete read for {child.Path} ({total}/{rawData.Length})");
                         return false;
                     }
                     total += n;
@@ -150,17 +150,17 @@ public class UtilsJab
                 Log.Debug($"Extracted: {child.Path} size={child.Size} unc={child.UncSize} {(attemptedDecompress ? "[decomp]" : string.Empty)}");
             }
 
-            Log.Info($"UtilsJab::Decode completed. Files extracted: {header.Children.Count}");
+            Log.Info($"JAB Decode completed. Files extracted: {header.Children.Count}");
             return true;
         }
         catch (Exception ex)
         {
-            Log.Error("UtilsJab::Decode exception", ex);
+            Log.Error("JAB Decode exception", ex);
             return false;
         }
     }
 
-    // ==================== ISPEZIONE SENZA ESTRARRE ====================
+    // ==================== PARSE WITHOUT EXTRACTION ====================
     public record JabChildInfo(string Path, int Size, int UncSize, double Time, uint Crc, uint DataLocalOffset, bool Compressed);
     public record JabFileInfo(string JabName, byte Version, bool Compress, uint DataSectionGOffset, uint ChildCount, string Prefix, IReadOnlyList<JabChildInfo> Children);
 
@@ -168,7 +168,7 @@ public class UtilsJab
     {
         if (string.IsNullOrEmpty(jabFilePath) || !File.Exists(jabFilePath))
         {
-            Log.Error("JabFileInfo::Inspect: file not found: " + jabFilePath);
+            Log.Error("Inspect: file not found: " + jabFilePath);
             return null;
         }
         encoding ??= Encoding.UTF8;
@@ -181,7 +181,7 @@ public class UtilsJab
             var header = LoadHeader(reader, encoding);
             if (header == null || !header.Valid)
             {
-                Log.Error("JabFileInfo::Inspect: header not valid");
+                Log.Error("Inspect: header is null/not valid");
                 return null;
             }
             var list = new List<JabChildInfo>((int)Math.Min(header.ChildCount, 100000));
@@ -191,7 +191,7 @@ public class UtilsJab
                 var child = LoadJabChildFile(reader, header, jabName, encoding, ref lastRel);
                 if (child == null || !child.Valid)
                 {
-                    Log.Warn($"JabFileInfo::Inspect: child {i} not valid, stopping");
+                    Log.Warn($"Inspect: child {i} is null/not valid, stopping");
                     break;
                 }
                 header.AddChild(child);
@@ -201,49 +201,12 @@ public class UtilsJab
         }
         catch (Exception ex)
         {
-            Log.Error("JabFileInfo::Inspect exception", ex);
+            Log.Error("Inspect: exception", ex);
             return null;
         }
     }
 
-    // ================== SUPPORTO HEADER / CHILD ==================
-    private sealed class JabHeader
-    {
-        public byte Version { get; init; }
-        public bool Compress { get; init; }
-        public uint DataSectionGOffset { get; init; }
-        public uint ChildCount { get; init; }
-        public string Prefix { get; set; } = string.Empty;
-        public List<JabChildFile> Children { get; } = new();
-        public bool Valid => Version >= 1 && ChildCount <= 100_000; // guardrail
-        public bool AddChild(JabChildFile child)
-        {
-            if (child == null) return false;
-            Children.Add(child);
-            return true;
-        }
-        public static JabHeader Create(byte ver, bool compress, uint dataOffset, uint childCount) => new()
-        {
-            Version = ver,
-            Compress = compress,
-            DataSectionGOffset = dataOffset,
-            ChildCount = childCount
-        };
-    }
-
-    private sealed class JabChildFile
-    {
-        public string JabName { get; init; } = string.Empty;
-        public string Path { get; set; } = string.Empty;
-        public int Size { get; set; }
-        public int UncSize { get; set; }
-        public double Time { get; set; }
-        public uint Crc { get; set; }
-        public uint DataLocalOffset { get; set; }
-        public bool CrcValid => Crc != 0;
-        public bool Valid => !string.IsNullOrEmpty(Path) && Size >= 0;
-    }
-
+    // ================== JAB HEADER / CHILD ==================
     private static JabHeader? LoadHeader(BinaryReader reader, Encoding? encoding)
     {
         if (reader == null) return null;
@@ -302,14 +265,14 @@ public class UtilsJab
                 if (nameBytes.Length != relNameLen) return null;
                 relative = enc.GetString(nameBytes);
             }
-            // Se abbiamo un lastChildRelativePath e depthOrPrefixLen indica una lunghezza da mantenere
+            // If we have a lastChildRelativePath and depthOrPrefixLen indicates a length to keep
             if (!string.IsNullOrEmpty(lastChildRelativePath) && depthOrPrefixLen > 0 && depthOrPrefixLen <= lastChildRelativePath.Length)
             {
                 string prefixKeep = lastChildRelativePath.Substring(0, depthOrPrefixLen);
                 relative = prefixKeep + relative;
             }
 
-            // Aggiunge suffisso tipo se necessario
+            // Adds type suffix if necessary
             relative = type switch
             {
                 1 => relative + ".asset",
@@ -320,7 +283,7 @@ public class UtilsJab
                 _ => relative
             };
 
-            // Metadati
+            // Metadata
             uint dataLocalOffset = reader.ReadUInt32();
             int size = reader.ReadInt32();
             int uncSize = header.Compress ? reader.ReadInt32() : size;
