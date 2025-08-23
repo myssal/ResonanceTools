@@ -8,8 +8,12 @@ ResonanceTools are a set of tools to parse and extract hotfix custom archives fr
 
 ## Usage:
 1. **ResonanceTools.HotfixParser.exe:**
-```Usage: HotfixParser <input_file> <output_file>```
-```Example: HotfixParser desc.bin output.json```
+```
+Usage: HotfixParser <input_file> <output_file>
+Example: HotfixParser desc.bin output.json
+```
 1. **ResonanceTools.JABParser.exe:**
-```Usage: JABParser <file.jab>/<directory> [--extract <outDir>] [--buffer <size>] [--json <meta.json>]```
-```Example: JABParser myfile.jab --extract outputDir```
+```
+Usage: JABParser <file.jab>/<directory> [--extract <outDir>] [--buffer <size>] [--json <meta.json>]
+Example: JABParser myfile.jab --extract outputDir
+```
