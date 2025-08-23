@@ -1,6 +1,7 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using ResonanceTools.Utility;
 
 namespace ResonanceTools.JABParser;
 
@@ -15,6 +16,7 @@ public class UtilsEncrypts
     /// <summary>
     /// Decodes the content using the specified encryption type and key.
     /// Exact reimplementation of Assembly-CSharp.HK.Core.Utils.UtilsEncrypts
+    /// Currently not used by the Hotfix Manager
     /// </summary>
     private const string secretKey = "GQDstcKsx0NHjPOuXOYg5MbeJ1XT0uFiwDVvVBrk";
 
@@ -32,7 +34,8 @@ public class UtilsEncrypts
                 Array.Copy(keyBytes, desKey, Math.Min(desKey.Length, keyBytes.Length));
                 return DecodeDes(iContent, desKey);
             default:
-                throw new ArgumentException("Invalid encryption type");
+                Log.Error("Invalid encryption type");
+                throw new ArgumentException();
         }
     }
 

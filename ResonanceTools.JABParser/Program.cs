@@ -12,6 +12,7 @@ public class Program
         Console.WriteLine("Usage: JABParser <file.jab>/<directory> [--extract <outDir>] [--buffer <size>] [--json <meta.json>]");
         Console.WriteLine("Without --extract, the tool generates only the JSON metadata.");
         Console.WriteLine("With --extract, won't generate JSON metadata.");
+        Console.WriteLine("Example: JABParser myfile.jab --extract outputDir");
     }
 
     // Helper to avoid duplicating top-level path segment (e.g., Asset) in outDir and internal paths.
@@ -53,7 +54,7 @@ public class Program
         bool isFile = File.Exists(inputPath);
         if (!isDirectory && !isFile)
         {
-            Console.Error.WriteLine("File or directory not found: " + inputPath);
+            Log.Error("File or directory not found: " + inputPath);
             return 2;
         }
 
@@ -158,7 +159,7 @@ public class Program
         }
         catch (Exception ex)
         {
-            Log.Error("Error: " + ex.Message);
+            Log.Error("Error: ", ex);
             return 5;
         }
     }

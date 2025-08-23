@@ -230,7 +230,7 @@ public class UtilsJab
                     if (encoding == null) encoding = Encoding.UTF8;
                     string prefix = encoding.GetString(prefixBytes);
                     if (!prefix.EndsWith("/", StringComparison.Ordinal))
-                        prefix += "/"; // coerente con EndsWith(StringLiteral___4)
+                        prefix += "/";
                     header.Prefix = prefix;
                 }
             }
@@ -238,10 +238,12 @@ public class UtilsJab
         }
         catch (EndOfStreamException)
         {
+            Log.Error("LoadHeader: End of stream reached unexpectedly");
             return null;
         }
         catch (IOException)
         {
+            Log.Error("LoadHeader: I/O error occurred");
             return null;
         }
         catch (Exception ex)
@@ -310,10 +312,12 @@ public class UtilsJab
         }
         catch (EndOfStreamException)
         {
+            Log.Error("LoadChildFile: End of stream reached unexpectedly");
             return null;
         }
         catch (IOException)
         {
+            Log.Error("LoadChildFile: I/O error occurred");
             return null;
         }
     }

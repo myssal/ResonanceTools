@@ -8,7 +8,7 @@ public class Program
     private static void PrintUsage()
     {
         Console.WriteLine("Usage: HotfixParser <input_file> <output_file>");
-        Console.WriteLine("No need for file extensions (will be added automatically and saved in .json) for <output_file>");
+        Console.WriteLine("Example: HotfixParser desc.bin output.json");
     }
 
     public static int Main(string[] args)
@@ -35,7 +35,6 @@ public class Program
             return 1;
         }
         VO_hotfixDesc hotfixDesc = VO_hotfixDesc.Deserialize("hotfix", uncompressedData);
-        outputFile = Path.ChangeExtension(outputFile, ".json");
         var jsonOptions = new JsonSerializerOptions
         {
             IncludeFields = true,

@@ -1,54 +1,36 @@
 <Project>
   <PropertyGroup>
-    <!-- Radice unica dove raccogliere tutti i file compilati -->
-    <!-- Personalizzabile via /p:CentralOutputRoot= -->
     <CentralOutputRoot>$(SolutionDir)_dist\</CentralOutputRoot>
-    <!-- Se vuoi includere il TargetFramework nel path finale metti true -->
-    <CentralIncludeTFM>true</CentralIncludeTFM>
+    <CentralIncludeTFM>false</CentralIncludeTFM>
   </PropertyGroup>
 
-  <!-- Target che copia gli artifact principali di ogni progetto nella cartella centrale -->
   <Target Name="AggregateBuildOutputs" AfterTargets="Build" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
     <PropertyGroup>
-  <!-- Deposita tutto direttamente nella cartella radice _dist senza sottocartelle per Configuration / TFM -->
-  <CentralOutputDir>$(CentralOutputRoot)</CentralOutputDir>
+      <CentralOutputDir>$(CentralOutputRoot)</CentralOutputDir>
     </PropertyGroup>
 
-    <!-- ItemGroup degli artifact che ci interessano -->
     <ItemGroup>
-      <!-- Output primario (exe/dll) -->
       <_PrimaryOutput Include="$(TargetPath)" />
-  <!-- AppHost exe (solo per applicazioni) -->
-  <_AppHost Include="$(TargetDir)$(TargetName).exe" Condition="Exists('$(TargetDir)$(TargetName).exe')" />
-      <!-- Symbols -->
-      <_Symbols Include="$(TargetDir)$(TargetName).pdb" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
-      <!-- XML docs -->
-      <_XmlDocs Include="$(TargetDir)$(TargetName).xml" Condition="Exists('$(TargetDir)$(TargetName).xml')" />
-  <!-- File runtime (framework-dependent) -->
-  <_RuntimeFiles Include="$(TargetDir)$(TargetName).deps.json" Condition="Exists('$(TargetDir)$(TargetName).deps.json')" />
-  <_RuntimeFiles Include="$(TargetDir)$(TargetName).runtimeconfig.json" Condition="Exists('$(TargetDir)$(TargetName).runtimeconfig.json')" />
-      <!-- Dipendenze locali generate dal progetto stesso (esclude runtime framework assemblies più comuni) -->
-      <_LocalProjectDeps Include="$(TargetDir)*.dll" 
-                         Exclude="$(TargetPath);$(TargetDir)Microsoft.*.dll;$(TargetDir)System.*.dll;$(TargetDir)mscorlib.dll" />
+      <_AppHost Include="$(TargetDir)$(TargetName).exe" Condition="Exists('$(TargetDir)$(TargetName).exe')" />
+      <_RuntimeFiles Include="$(TargetDir)$(TargetName).deps.json" Condition="Exists('$(TargetDir)$(TargetName).deps.json')" />
+      <_RuntimeFiles Include="$(TargetDir)$(TargetName).runtimeconfig.json" Condition="Exists('$(TargetDir)$(TargetName).runtimeconfig.json')" />
+      <_LocalProjectDeps Include="$(TargetDir)*.dll" Exclude="$(TargetPath);$(TargetDir)Microsoft.*.dll;$(TargetDir)System.*.dll;$(TargetDir)mscorlib.dll" />
     </ItemGroup>
 
     <MakeDir Directories="$(CentralOutputDir)" />
 
     <Copy SourceFiles="@(_PrimaryOutput)" DestinationFolder="$(CentralOutputDir)" SkipUnchangedFiles="true" />
-  <Copy SourceFiles="@(_AppHost)" DestinationFolder="$(CentralOutputDir)" SkipUnchangedFiles="true" Condition=" '@(_AppHost)' != '' " />
+    <Copy SourceFiles="@(_AppHost)" DestinationFolder="$(CentralOutputDir)" SkipUnchangedFiles="true" Condition=" '@(_AppHost)' != '' " />
     <Copy SourceFiles="@(_Symbols)" DestinationFolder="$(CentralOutputDir)" SkipUnchangedFiles="true" Condition=" '@(_Symbols)' != '' " />
     <Copy SourceFiles="@(_XmlDocs)" DestinationFolder="$(CentralOutputDir)" SkipUnchangedFiles="true" Condition=" '@(_XmlDocs)' != '' " />
-  <Copy SourceFiles="@(_RuntimeFiles)" DestinationFolder="$(CentralOutputDir)" SkipUnchangedFiles="true" Condition=" '@(_RuntimeFiles)' != '' " />
+    <Copy SourceFiles="@(_RuntimeFiles)" DestinationFolder="$(CentralOutputDir)" SkipUnchangedFiles="true" Condition=" '@(_RuntimeFiles)' != '' " />
     <Copy SourceFiles="@(_LocalProjectDeps)" DestinationFolder="$(CentralOutputDir)" SkipUnchangedFiles="true" />
   </Target>
 
-  <!-- Pulizia degli artifact aggregati (eseguito una sola volta per configurazione/framework) -->
   <Target Name="CleanAggregatedOutputs" AfterTargets="Clean" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
     <PropertyGroup>
-  <!-- Pulizia della cartella radice _dist (attenzione: rimuove tutti gli output aggregati) -->
-  <CentralOutputDir>$(CentralOutputRoot)</CentralOutputDir>
+      <CentralOutputDir>$(CentralOutputRoot)</CentralOutputDir>
     </PropertyGroup>
-    <!-- Rimuovi la directory solo se esiste -->
     <RemoveDir Directories="$(CentralOutputDir)" Condition="Exists('$(CentralOutputDir)')" />
   </Target>
 </Project>
