@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text.Json;
-using ResonanceTools.HotfixParser;
 using ResonanceTools.Utility;
 
-public class Program
+namespace ResonanceTools.HotfixParser;
+public static class Program
 {
     private static void PrintUsage()
     {
@@ -18,9 +18,13 @@ public class Program
             PrintUsage();
             return 1;
         }
+        
+        HotfixWrap(args[0], args[1]);
+        return 0;
+    }
 
-        string inputFile = args[0];
-        string outputFile = args[1];
+    public static int HotfixWrap(string inputFile, string outputFile)
+    {
 
         byte[] data = File.ReadAllBytes(inputFile);
         if (data.Length == 0)
@@ -41,6 +45,7 @@ public class Program
             WriteIndented = true
         };
         File.WriteAllText(outputFile, JsonSerializer.Serialize(hotfixDesc, jsonOptions));
+        Log.Info($"Successfully parse {Path.GetFileName(inputFile)} -> {Path.GetFileName(outputFile)}");
         return 0;
     }
 }
