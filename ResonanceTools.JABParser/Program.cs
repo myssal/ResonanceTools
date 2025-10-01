@@ -5,7 +5,7 @@ using ResonanceTools.Utility;
 
 namespace ResonanceTools.JABParser;
 
-public class Program
+public static class Program
 {
     private static void PrintUsage()
     {
@@ -49,6 +49,12 @@ public class Program
             return 1;
         }
 
+        return JabParseWrap(args);
+
+    }
+
+    public static int JabParseWrap(string[] args)
+    {
         string inputPath = args[0];
         bool isDirectory = Directory.Exists(inputPath);
         bool isFile = File.Exists(inputPath);
@@ -123,7 +129,8 @@ public class Program
                 }
                 return 0;
             }
-            else if (isFile)
+            
+            if (isFile)
             {
                 var info = UtilsJab.Inspect(inputPath, Encoding.UTF8);
                 if (info == null)
